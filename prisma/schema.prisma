@@ -1,0 +1,294 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("EDITOR")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs     AuditLog[]
+  notifications Notification[]
+}
+
+model ProductCategory {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  products Product[]
+}
+
+model Product {
+  id                String           @id @default(cuid())
+  name              String
+  slug              String           @unique
+  categoryId        String?
+  category          ProductCategory? @relation(fields: [categoryId], references: [id])
+  description       String
+  price             Float?
+  priceUnit         String?
+  currency          String           @default("EUR")
+  availability      String?
+  images            String           @default("[]") // JSON array of media URLs
+  videoUrl          String?
+  benefits          String?
+  usageInstructions String?
+  faq               String           @default("[]") // JSON array of {question, answer}
+  featured          Boolean          @default(false)
+  status            String           @default("DRAFT")
+  seoTitle          String?
+  seoDescription    String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  orders ProductOrder[]
+}
+
+model ProductOrder {
+  id              String   @id @default(cuid())
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id])
+  name            String
+  phone           String
+  email           String?
+  district        String?
+  quantity        String?
+  message         String?
+  paymentProofUrl String?
+  status          String   @default("NEW")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  image       String?
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  requests ServiceRequest[]
+}
+
+model ServiceRequest {
+  id            String   @id @default(cuid())
+  serviceId     String?
+  service       Service? @relation(fields: [serviceId], references: [id])
+  name          String
+  phone         String
+  email         String?
+  district      String?
+  organization  String?
+  livestockType String?
+  animalCount   Int?
+  message       String?
+  status        String   @default("NEW")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Job {
+  id                  String    @id @default(cuid())
+  title               String
+  slug                String    @unique
+  department          String?
+  location            String?
+  employmentType      String?
+  description         String
+  responsibilities    String?
+  qualifications      String?
+  experience          String?
+  applicationDeadline DateTime?
+  salaryInfo          String?
+  status              String    @default("DRAFT")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  applications JobApplication[]
+}
+
+model JobApplication {
+  id          String   @id @default(cuid())
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id])
+  fullName    String
+  email       String
+  phone       String?
+  education   String?
+  experience  String?
+  skills      String?
+  cvUrl       String?
+  coverLetter String?
+  status      String   @default("NEW")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model NewsCategory {
+  id       String        @id @default(cuid())
+  name     String
+  slug     String        @unique
+  articles NewsArticle[]
+}
+
+model NewsArticle {
+  id             String        @id @default(cuid())
+  title          String
+  slug           String        @unique
+  excerpt        String?
+  content        String
+  featuredImage  String?
+  categoryId     String?
+  category       NewsCategory? @relation(fields: [categoryId], references: [id])
+  tags           String        @default("[]") // JSON array
+  status         String        @default("DRAFT")
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Event {
+  id                   String    @id @default(cuid())
+  title                String
+  slug                 String    @unique
+  date                 DateTime
+  time                 String?
+  location             String?
+  description          String
+  organizer            String?
+  speaker              String?
+  registrationDeadline DateTime?
+  capacity             Int?
+  images               String    @default("[]") // JSON array
+  registrationEnabled  Boolean   @default(false)
+  status               String    @default("DRAFT")
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  registrations EventRegistration[]
+}
+
+model EventRegistration {
+  id           String   @id @default(cuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id])
+  name         String
+  email        String?
+  phone        String?
+  organization String?
+  createdAt    DateTime @default(now())
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  filename    String
+  url         String
+  type        String // image, video, document
+  category    String?
+  description String?
+  altText     String?
+  size        Int?
+  createdAt   DateTime @default(now())
+}
+
+model FarmerStory {
+  id          String   @id @default(cuid())
+  farmerName  String
+  district    String?
+  photo       String?
+  background  String?
+  problem     String?
+  solution    String?
+  results     String?
+  testimonial String?
+  videoUrl    String?
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Partner {
+  id      String  @id @default(cuid())
+  name    String
+  logo    String?
+  website String?
+  type    String? // NGO, cooperative, institution, funder
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  category  String? // buy fodder, training, installation, partnership, job, general, technical support
+  message   String
+  status    String   @default("NEW")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ImpactMetric {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  label     String
+  value     Float
+  target    Float?
+  unit      String?
+  updatedAt DateTime @updatedAt
+}
+
+model WebsiteSetting {
+  key   String @id
+  value String
+}
+
+model VerificationRecord {
+  id              String    @id @default(cuid())
+  referenceNumber String    @unique
+  type            String // training, certificate, product, event
+  title           String
+  participantName String?
+  organization    String?
+  date            DateTime?
+  status          String    @default("valid")
+  details         String    @default("{}") // JSON
+  createdAt       DateTime  @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  details    String?
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  type      String
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
