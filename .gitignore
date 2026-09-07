@@ -1,7 +1,10 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
 # dependencies
 /node_modules
 /.pnp
 .pnp.js
+.yarn/install-state.gz
 
 # testing
 /coverage
@@ -23,7 +26,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env
 .env*.local
 
 # vercel
@@ -32,3 +34,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# env
+.env
+
+# database
+/prisma/*.db
+/prisma/*.db-journal
+
+# user uploads (kept locally / on the deploy volume, not in git)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# raw source material provided for content curation (large, and may contain
+# personal/business documents) - curated output lives in public/images/
+/data/
